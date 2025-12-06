@@ -9,45 +9,45 @@
 </head>
 <body>
     
-    <div class="container-morph" id="signup">
-    
-    <div class="form-container sign-up-container" id="signup">
-        <form action="/signup" method="POST">
-            <h1>Create Account</h1>
-            <input type="text"id="name" name="name" placeholder="Name" required/>
-            <input type="email" id="email" name="email" placeholder="Email" required/>
-            <input type="password" id="password" name="password" placeholder="Password" required/>
-            <input type="password" id="cpassword" name="cpassword" placeholder="Confirm Password" required/>
-            <button type="submit">Sign Up</button>
-        </form>
-    </div>
+    <div id="signin" class="container-morph">
 
-    <div class="form-container sign-in-container" id="signin"> 
-        <form action="/login" method="POST">
-            <h1>Log In</h1> <input type="email" placeholder="Email" required/>
-            <input type="password" placeholder="Password" required/>
-            <input type="password" placeholder="Confirm Password" required/> 
-            <a href="#">Forgot Your Password?</a>
-            <button type="submit">Log In</button> </form>
-    </div>
+  <!-- SIGN IN -->
+  <div class="form-container sign-in-container">
+    <form onsubmit="login(event)">
+      <h1>Login</h1>
+      <input type="email" id="loginEmail" placeholder="Email" required />
+      <input type="password" id="loginPass" placeholder="Password" required />
+      <button>Login</button>
+    </form>
+  </div>
 
-    <div class="overlay-container">
-        <div class="overlay">
-            
-            <div class="overlay-panel overlay-left">
-                <h1>Welcome Back!</h1>
-                <p>To keep connected with your posts, please login with your info.</p>
-                <a href="#signin" class="ghost button-link">Log In</a> 
-            </div>
-            
-            <div class="overlay-panel overlay-right">
-                <h1>Hello, Friend!</h1>
-                <p>Enter your personal details and start your journey with us.</p>
-                <a href="#signup" class="ghost button-link">Sign Up</a>
-            </div>
-            
-        </div>
+  <!-- SIGN UP -->
+  <div class="form-container sign-up-container">
+    <form onsubmit="signup(event)">
+      <h1>Create Account</h1>
+      <input type="text" id="name" placeholder="Full Name" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="pass" placeholder="Password" required />
+      <input type="password" id="cpass" placeholder="Confirm Password" required />
+      <button>Sign Up</button>
+    </form>
+  </div>
+
+  <!-- OVERLAY -->
+  <div class="overlay-container">
+    <div class="overlay">
+      <div class="overlay-panel overlay-left">
+        <h1>Welcome Back!</h1>
+        <a href="#signin"><button class="ghost">Login</button></a>
+      </div>
+
+      <div class="overlay-panel overlay-right">
+        <h1>Hello!</h1>
+        <a href="#signup"><button class="ghost">Signup</button></a>
+      </div>
     </div>
+  </div>
+
 </div>
 
     <script src="app.js"></script>
