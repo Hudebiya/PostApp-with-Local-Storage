@@ -1,227 +1,235 @@
-// ---------------------- SIGNUP & LOGIN LOGIC ----------------------
-function signup(event) {
+//                    (Log In/Sign Up) 
+
+function register(event) {
     event.preventDefault();
-    let name = document.getElementById("name").value;
-    let email = document.getElementById("email").value;
-    let pass = document.getElementById("pass").value;
-    let cpass = document.getElementById("cpass").value;
 
-    if (pass !== cpass) { alert("Passwords do not match!"); return; }
+    var name = document.getElementById("name").value;
+    var email = document.getElementById("email").value;
+    var phone = document.getElementById("phone").value;
+    var password = document.getElementById("password").value;
+    var cpassword = document.getElementById("cpassword").value;
 
-    let users = JSON.parse(localStorage.getItem("users")) || []; 
-    if (users.find(u => u.email === email)) {
-        alert("This email is already registered. Please login."); return;
+    if (!name.trim()) {
+        alert("Name is required");
+        return;
+    } else if (password !== cpassword) {
+        alert("Passwords should be identical");
+        return;
     }
 
-    let newUser = { id: Date.now(), name, email, pass };
-    users.push(newUser);
-    localStorage.setItem("users", JSON.stringify(users));
+    var userData = {
+        name: name,
+        email: email,
+        phone: phone,
+        password: password
+    };
+    
+    localStorage.setItem("userData", JSON.stringify(userData));
+    
+    localStorage.setItem("isLoggedIn", "true"); 
 
-    alert("Signup successful! Now login.");
-    // Signup ke baad, default hash (#) par bhejte hain jo login form dikhayega
-    window.location.href = "index.html#"; 
+    alert(name + " Registered Successfully. Redirecting to Post App.");
+    window.location.href = "dashboard.html"; 
 }
 
 function login(event) {
     event.preventDefault();
-    let email = document.getElementById("loginEmail").value;
-    let pass = document.getElementById("loginPass").value;
 
-    let users = JSON.parse(localStorage.getItem("users")) || []; 
-    const foundUser = users.find(u => u.email === email && u.pass === pass);
+    var loginEmail = document.getElementById("loginEmail").value;
+    var loginPass = document.getElementById("loginPass").value;
 
-    if (foundUser) {
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("currentUser", JSON.stringify(foundUser)); 
-        alert("Login Successful!");
-        window.location.href = "dashboard.html";
-    } else {
-        alert("Incorrect email or password");
-    }
-}
+    var storedData = JSON.parse(localStorage.getItem("userData"));
 
-// ---------------------- DASHBOARD SECURITY AND INIT ----------------------
-// Ensure this code only runs on the dashboard page
-if (window.location.pathname.includes("dashboard.html")) {
-    
-    // Security Check: Agar login nahi hai, toh index.html par bhej do
-    if (localStorage.getItem("isLoggedIn") !== "true") {
-        window.location.href = "index.html"; 
-    } else {
-        let currentUser = JSON.parse(localStorage.getItem("currentUser"));
-        if (currentUser) {
-            document.getElementById("welcomeUser").innerText = `Welcome, ${currentUser.name}!`;
-        }
-        showPosts(); // Posts ko load karna
-    }
-    
-    document.getElementById("logoutBtn").onclick = () => {
-        localStorage.removeItem("isLoggedIn");
-        localStorage.removeItem("currentUser"); 
-        window.location.href = "index.html";
-    };
-}
-
-
-// ---------------------- POST APP LOGIC (WITH LOCAL STORAGE) ----------------------
-let selectedImage = "assets/img-1.jpg";
-let editMode = false;
-let editingPostId = null;
-
-// Image selection logic
-function selectImg(img, element) {
-    selectedImage = img;
-    document.querySelectorAll(".bgImg").forEach((item) =>
-        item.classList.remove("selectedImg")
-    );
-    element.classList.add("selectedImg"); 
-}
-
-// Post Creation and Update logic
-function post() {
-    let title = document.getElementById("title").value;
-    let desc = document.getElementById("description").value;
-
-    if (!title || !desc) {
-        alert("Please fill all fields");
+    if (!storedData) {
+        alert("No user registered. Please Sign Up first.");
         return;
     }
 
-    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-    let posts = JSON.parse(localStorage.getItem("posts")) || [];
-
-    if (editMode) {
-        // --- EDIT LOGIC ---
-        const postIndex = posts.findIndex(p => p.id === editingPostId);
-        if (postIndex !== -1) {
-            posts[postIndex].title = title;
-            posts[postIndex].desc = desc;
-            posts[postIndex].img = selectedImage;
-        }
-        document.getElementById("postBtn").classList.remove('d-none');
-        document.getElementById("updateBtn").classList.add('d-none');
-        document.getElementById("cancelEditBtn").classList.add('d-none');
-        editMode = false;
-        editingPostId = null;
-        alert("Post Updated!");
-        
+    if (storedData.email !== loginEmail) {
+        alert("Invalid Email");
+    } else if (storedData.password !== loginPass) {
+        alert("Invalid Password");
     } else {
-        // --- NEW POST LOGIC ---
-        posts.push({
-            id: Date.now(),
-            userId: currentUser.id,
-            title,
-            desc,
-            img: selectedImage
-        });
-        alert("Post Added!");
+        
+        localStorage.setItem("isLoggedIn", "true"); 
+        
+        alert("Login Successful. Redirecting to Post App.");
+        window.location.href = "dashboard.html";
+    }
+}
+
+function logout() {
+    
+    localStorage.removeItem("isLoggedIn");
+    
+    alert("Logged Out Successfully.");
+    window.location.href = "index.html"; 
+}
+
+function renderUserData() {
+    var storedData = JSON.parse(localStorage.getItem("userData"));
+    if (storedData) {
+        var displayData = document.getElementById("displayData");
+        if(displayData) {
+             displayData.innerHTML = `
+                <li class="list-group-item">Name: <strong>${storedData.name}</strong></li>
+                <li class="list-group-item">Email: <strong>${storedData.email}</strong></li>
+                <li class="list-group-item">Phone: <strong>${storedData.phone}</strong></li>
+            `;
+        }
+    }
+}
+
+var cardBg = "assets/img-1.jpg";
+var editMode = false;
+var editPostId = null;
+
+function selectImg(src) {
+    cardBg = src;
+    var bgImgs = document.getElementsByClassName("bgImg");
+    for (var i = 0; i < bgImgs.length; i++) {
+        bgImgs[i].classList.remove("selectedImg");
+    }
+    
+    event.target.classList.add("selectedImg"); 
+}
+
+function savePost() {
+    var title = document.getElementById("title").value;
+    var description = document.getElementById("description").value;
+
+    if (!title.trim() || !description.trim()) {
+        Swal.fire("Error", "Please enter title & description", "error");
+        return;
     }
 
-    // Local Storage ko update karo
-    localStorage.setItem("posts", JSON.stringify(posts));
+    var posts = JSON.parse(localStorage.getItem('posts')) || [];
+
+    if (editMode) {
+        var postIndex = posts.findIndex(p => p.id === editPostId);
+        if (postIndex !== -1) {
+            posts[postIndex].title = title;
+            posts[postIndex].description = description;
+            posts[postIndex].cardBg = cardBg;
+        }
+        Swal.fire("Updated!", "Your post has been updated.", "success");
+
+    } else {
+        var newPost = {
+            id: Date.now(),
+            title: title,
+            description: description,
+            cardBg: cardBg
+        };
+        posts.push(newPost);
+        Swal.fire("Posted!", "Your post has been added.", "success");
+    }
+
+    localStorage.setItem('posts', JSON.stringify(posts));
 
     document.getElementById("title").value = "";
     document.getElementById("description").value = "";
+    
+    editMode = false;
+    editPostId = null;
+    document.getElementById("postButton").innerText = "Post";
 
-    showPosts(); // Updated posts ko display karo
+    renderPosts();
+
+    document.getElementById("formDiv").style.display = "none";
+    document.getElementById("postsSection").style.display = "block";
 }
 
-// Update button ka handler
-function updatePost() {
-    post(); 
-}
+function renderPosts() {
+    var postsContainer = document.getElementById("posts");
+    postsContainer.innerHTML = "";
 
-// Post display logic
-function showPosts() {
-    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-    if (!currentUser) return;
+    var posts = JSON.parse(localStorage.getItem('posts')) || [];
 
-    let allPosts = JSON.parse(localStorage.getItem("posts")) || [];
-    let div = document.getElementById("posts");
-
-    // Current user ki posts filter karo
-    const userPosts = allPosts.filter(p => p.userId === currentUser.id);
-
-    div.innerHTML = "";
-
-    if (userPosts.length === 0) {
-        div.innerHTML = '<p class="text-center text-muted">Aapne abhi tak koi post nahi kiya hai.</p>';
-        return;
-    }
-
-    userPosts.forEach((p) => {
-        div.innerHTML += `
-            <div class="col-12 col-md-6 col-lg-4" data-post-id="${p.id}">
-                <div class="card shadow">
-                    <div class="card-body" style="background-image:url('${p.img}'); background-size: cover; background-position:center;">
-                        <div class="post-card-overlay">
-                            <h5 class="text-white">${p.title}</h5>
-                            <p class="text-white">${p.desc}</p>
-                            <div class="post-card-actions">
-                                <button onclick="editPost(${p.id})" class="btn btn-success btn-sm">Edit</button>
-                                <button onclick="deletePost(${p.id})" class="btn btn-danger btn-sm">Delete</button>
-                            </div>
-                        </div>
-                    </div>
+    posts.forEach(function (post) {
+        postsContainer.innerHTML += `
+            <div class="card m-2 shadow" data-post-id="${post.id}">
+                <div style="background-image: url('${post.cardBg}'); background-color: rgba(0,0,0,0.5);" class="card-body p-3">
+                    <h5 class="card-title">${post.title}</h5>
+                    <p class="card-text">${post.description}</p>
+                </div>
+                <div class="d-flex justify-content-end p-2">
+                    <button onclick="editPost(${post.id})" class="btn btn-success btn-sm me-2">Edit</button>
+                    <button onclick="deletePost(${post.id})" class="btn btn-danger btn-sm">Delete</button>
                 </div>
             </div>
         `;
     });
 }
 
-// Post deletion logic
-function deletePost(id) {
-    let posts = JSON.parse(localStorage.getItem("posts")) || [];
-    
-    // Woh post htao jiski ID match karti ho
-    const updatedPosts = posts.filter(p => p.id !== id);
-
-    localStorage.setItem("posts", JSON.stringify(updatedPosts));
-    alert("Post Deleted!");
-    showPosts();
+function deletePost(postId) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            var posts = JSON.parse(localStorage.getItem('posts')) || [];
+            var updatedPosts = posts.filter(p => p.id !== postId);
+            
+            localStorage.setItem('posts', JSON.stringify(updatedPosts));
+            renderPosts();
+            
+            Swal.fire("Deleted!", "Your post has been removed.", "success");
+        }
+    });
 }
 
-// Post edit setup logic
-function editPost(id) {
-    let posts = JSON.parse(localStorage.getItem("posts")) || [];
-    const postToEdit = posts.find(p => p.id === id);
+function editPost(postId) {
+    var posts = JSON.parse(localStorage.getItem('posts')) || [];
+    var postToEdit = posts.find(p => p.id === postId);
 
     if (postToEdit) {
-        // Form mein data load karo
         document.getElementById("title").value = postToEdit.title;
-        document.getElementById("description").value = postToEdit.desc;
+        document.getElementById("description").value = postToEdit.description;
         
-        // Image selection ko update karo
-        selectedImage = postToEdit.img;
+        cardBg = postToEdit.cardBg;
+        var bgImgs = document.getElementsByClassName("bgImg");
+        for (var i = 0; i < bgImgs.length; i++) {
+             bgImgs[i].classList.remove("selectedImg");
+             if(bgImgs[i].getAttribute('src') === cardBg) {
+                 bgImgs[i].classList.add("selectedImg");
+             }
+        }
         
-        // Buttons ko update karo
-        document.getElementById("postBtn").classList.add('d-none');
-        document.getElementById("updateBtn").classList.remove('d-none');
-        document.getElementById("cancelEditBtn").classList.remove('d-none');
-
-        // Edit mode variables set karo
+        document.getElementById("postButton").innerText = "Update Post";
         editMode = true;
-        editingPostId = id;
-        
-        alert("Edit Mode Active. Please use Update Post button.");
+        editPostId = postId; 
+
+        showForm();
+        Swal.fire("Edit Mode", "You can now edit your post.", "info");
     }
 }
 
-// Cancel edit logic
-function cancelEdit() {
-    document.getElementById("title").value = "";
-    document.getElementById("description").value = "";
-    
-    document.getElementById("postBtn").classList.remove('d-none');
-    document.getElementById("updateBtn").classList.add('d-none');
-    document.getElementById("cancelEditBtn").classList.add('d-none');
-    
-    editMode = false;
-    editingPostId = null;
-    alert("Edit Cancelled.");
+function showForm() {
+    document.getElementById("formDiv").style.display = "block";
+    var postsSection = document.getElementById("postsSection");
+    if(postsSection) {
+        postsSection.style.display = "none";
+    }
 }
 
-// Theme change logic
 function changeTheme() {
     document.body.classList.toggle("dark-theme");
+}
+
+function checkLoginAndRenderPosts() {
+    var isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    if (!isLoggedIn) {
+        
+        window.location.href = "index.html"; 
+        return;
+    }
+    
+    renderUserData(); 
+    renderPosts();
 }
